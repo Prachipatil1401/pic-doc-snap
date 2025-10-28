@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-image.jpg";
+import { Camera as CapCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 interface DetectionResult {
   disease: string;
@@ -23,7 +24,6 @@ const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<DetectionResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -40,6 +40,26 @@ const Index = () => {
       setResult(null);
     };
     reader.readAsDataURL(file);
+  };
+
+  const takePhoto = async () => {
+    try {
+      const image = await CapCamera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Camera
+      });
+
+      if (image.dataUrl) {
+        setSelectedImage(image.dataUrl);
+        setResult(null);
+        toast.success('Photo captured successfully!');
+      }
+    } catch (error) {
+      console.error('Camera error:', error);
+      toast.error('Failed to access camera. Please try uploading an image instead.');
+    }
   };
 
   const analyzeImage = async () => {
@@ -83,7 +103,6 @@ const Index = () => {
     setSelectedImage(null);
     setResult(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const getSeverityColor = (severity: string) => {
@@ -145,7 +164,7 @@ const Index = () => {
                 <div className="grid md:grid-cols-2 gap-4 max-w-md mx-auto pt-4">
                   <Button
                     size="lg"
-                    onClick={() => cameraInputRef.current?.click()}
+                    onClick={takePhoto}
                     className="h-auto py-6 flex-col gap-3"
                   >
                     <Camera className="w-6 h-6" />
@@ -163,14 +182,6 @@ const Index = () => {
                   </Button>
                 </div>
 
-                <input
-                  ref={cameraInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handleImageSelect}
-                  className="hidden"
-                />
                 <input
                   ref={fileInputRef}
                   type="file"
