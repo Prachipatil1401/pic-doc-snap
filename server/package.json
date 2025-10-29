@@ -1,0 +1,15 @@
+{
+  "name": "pi-camera-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Raspberry Pi camera server for plant disease detection",
+  "main": "camera-server.js",
+  "scripts": {
+    "start": "node camera-server.js",
+    "dev": "node camera-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}

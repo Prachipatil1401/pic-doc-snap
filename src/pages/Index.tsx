@@ -44,21 +44,37 @@ const Index = () => {
 
   const takePhoto = async () => {
     try {
-      const image = await CapCamera.getPhoto({
-        quality: 90,
-        allowEditing: false,
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Camera
+      setIsAnalyzing(true);
+      toast.info('Triggering Raspberry Pi camera...');
+      
+      // Get the Pi camera server URL from environment or use localhost
+      const cameraServerUrl = import.meta.env.VITE_CAMERA_SERVER_URL || 'http://localhost:3001';
+      
+      const response = await fetch(`${cameraServerUrl}/api/capture`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
-      if (image.dataUrl) {
-        setSelectedImage(image.dataUrl);
+      if (!response.ok) {
+        throw new Error('Failed to capture photo from Pi camera');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.image) {
+        setSelectedImage(data.image);
         setResult(null);
-        toast.success('Photo captured successfully!');
+        toast.success('Photo captured from Pi camera!');
+      } else {
+        throw new Error(data.message || 'Failed to capture photo');
       }
     } catch (error) {
       console.error('Camera error:', error);
-      toast.error('Failed to access camera. Please try uploading an image instead.');
+      toast.error('Failed to access Pi camera. Make sure the camera server is running.');
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
