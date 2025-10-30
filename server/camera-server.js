@@ -15,6 +15,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const MOCK_MODE = process.env.MOCK_MODE === 'true'; // Enable mock mode for testing without hardware
 
 // Enable CORS for all origins (mobile phones on same network)
 app.use(cors({
@@ -27,6 +28,7 @@ app.use(express.json());
 // Log server configuration on startup
 console.log('='.repeat(50));
 console.log('📸 Camera Server Configuration:');
+console.log(`   Mode: ${MOCK_MODE ? '🎭 MOCK (Testing)' : '📸 Real Camera'}`);
 console.log(`   Camera Type: ${process.env.CAMERA_TYPE || 'csi'}`);
 if (process.env.CAMERA_TYPE === 'usb') {
   console.log(`   USB Device: ${process.env.USB_CAMERA_DEVICE || '/dev/video0'}`);
@@ -46,11 +48,54 @@ async function ensureTempDir() {
   }
 }
 
+// Generate a mock image for testing without hardware
+function generateMockImage() {
+  const timestamp = new Date().toLocaleString();
+  const svg = `
+    <svg width="1280" height="720" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#2d3748"/>
+      <text x="50%" y="35%" font-family="Arial" font-size="40" fill="#48bb78" text-anchor="middle">
+        🎭 MOCK CAMERA TEST
+      </text>
+      <text x="50%" y="50%" font-family="Arial" font-size="28" fill="#e2e8f0" text-anchor="middle">
+        ${timestamp}
+      </text>
+      <text x="50%" y="62%" font-family="Arial" font-size="20" fill="#a0aec0" text-anchor="middle">
+        This simulates a USB camera capture
+      </text>
+      <text x="50%" y="70%" font-family="Arial" font-size="18" fill="#718096" text-anchor="middle">
+        Perfect for testing before deploying to hardware
+      </text>
+      <circle cx="640" cy="500" r="80" fill="#48bb78" opacity="0.3"/>
+      <circle cx="640" cy="500" r="60" fill="#48bb78" opacity="0.5"/>
+      <circle cx="640" cy="500" r="40" fill="#48bb78" opacity="0.7"/>
+    </svg>
+  `;
+  
+  const base64 = Buffer.from(svg).toString('base64');
+  return `data:image/svg+xml;base64,${base64}`;
+}
+
 // Capture photo from Raspberry Pi camera
 app.post('/api/capture', async (req, res) => {
   try {
     console.log('Capture request received');
     
+    // MOCK MODE - Return test image without hardware
+    if (MOCK_MODE) {
+      console.log('🎭 Mock mode: Generating test image...');
+      const mockImage = generateMockImage();
+      
+      console.log('✅ Mock image generated successfully');
+      return res.json({
+        success: true,
+        image: mockImage,
+        message: 'Mock photo captured successfully',
+        mode: 'mock'
+      });
+    }
+    
+    // REAL CAMERA MODE
     const timestamp = Date.now();
     const filename = `capture_${timestamp}.jpg`;
     const filepath = path.join(TEMP_DIR, filename);
