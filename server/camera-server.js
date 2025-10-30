@@ -14,11 +14,25 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Enable CORS for all origins (mobile phones on same network)
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
+
+// Log server configuration on startup
+console.log('='.repeat(50));
+console.log('📸 Camera Server Configuration:');
+console.log(`   Camera Type: ${process.env.CAMERA_TYPE || 'csi'}`);
+if (process.env.CAMERA_TYPE === 'usb') {
+  console.log(`   USB Device: ${process.env.USB_CAMERA_DEVICE || '/dev/video0'}`);
+}
+console.log(`   Resolution: ${process.env.CAMERA_RESOLUTION || '1920x1080'}`);
+console.log('='.repeat(50));
 
 // Directory to temporarily store captured images
 const TEMP_DIR = path.join(__dirname, 'temp');
@@ -118,13 +132,43 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Camera server is running' });
 });
 
+// Get local IP address
+function getLocalIPAddress() {
+  const { networkInterfaces } = await import('os');
+  const nets = networkInterfaces();
+  
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // Skip internal and non-IPv4 addresses
+      if (net.family === 'IPv4' && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return 'localhost';
+}
+
 // Start server
 async function startServer() {
   await ensureTempDir();
+  
+  const localIP = await getLocalIPAddress();
+  
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🎥 Raspberry Pi Camera Server running on port ${PORT}`);
-    console.log(`📱 Mobile devices can access at http://<pi-ip-address>:${PORT}`);
-    console.log(`📸 Camera endpoint: POST /api/capture`);
+    console.log('\n' + '='.repeat(60));
+    console.log('🎥 Raspberry Pi Camera Server is RUNNING!');
+    console.log('='.repeat(60));
+    console.log(`\n📡 Local Access:`);
+    console.log(`   http://localhost:${PORT}`);
+    console.log(`\n📱 Remote Access (from mobile phones on same network):`);
+    console.log(`   http://${localIP}:${PORT}`);
+    console.log(`\n📸 Endpoints:`);
+    console.log(`   POST /api/capture - Take a photo`);
+    console.log(`   GET  /api/health  - Health check`);
+    console.log('\n' + '='.repeat(60));
+    console.log(`\n💡 Set this in your web app's .env.local:`);
+    console.log(`   VITE_CAMERA_SERVER_URL=http://${localIP}:${PORT}`);
+    console.log('='.repeat(60) + '\n');
   });
 }
 

@@ -45,20 +45,46 @@ const Index = () => {
   const takePhoto = async () => {
     try {
       setIsAnalyzing(true);
-      toast.info('Triggering Raspberry Pi camera...');
       
-      // Get the Pi camera server URL from environment or use localhost
-      const cameraServerUrl = import.meta.env.VITE_CAMERA_SERVER_URL || 'http://localhost:3001';
+      // Get the Pi camera server URL from environment
+      const cameraServerUrl = import.meta.env.VITE_CAMERA_SERVER_URL;
+      
+      if (!cameraServerUrl) {
+        toast.error('Camera server not configured. Please set VITE_CAMERA_SERVER_URL in .env.local');
+        return;
+      }
+      
+      toast.info('Connecting to Raspberry Pi camera...');
+      
+      // First, check if the camera server is reachable
+      try {
+        const healthCheck = await fetch(`${cameraServerUrl}/api/health`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(5000), // 5 second timeout
+        });
+        
+        if (!healthCheck.ok) {
+          throw new Error('Camera server is not responding');
+        }
+      } catch (healthError) {
+        console.error('Health check failed:', healthError);
+        toast.error(`Cannot reach camera server at ${cameraServerUrl}. Make sure:\n1. Camera server is running\n2. You're on the same WiFi network\n3. URL is correct in .env.local`);
+        return;
+      }
+      
+      toast.info('Capturing photo...');
       
       const response = await fetch(`${cameraServerUrl}/api/capture`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: AbortSignal.timeout(15000), // 15 second timeout for capture
       });
 
       if (!response.ok) {
-        throw new Error('Failed to capture photo from Pi camera');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to capture photo from Pi camera');
       }
 
       const data = await response.json();
@@ -66,13 +92,22 @@ const Index = () => {
       if (data.success && data.image) {
         setSelectedImage(data.image);
         setResult(null);
-        toast.success('Photo captured from Pi camera!');
+        toast.success('Photo captured successfully!');
       } else {
         throw new Error(data.message || 'Failed to capture photo');
       }
     } catch (error) {
       console.error('Camera error:', error);
-      toast.error('Failed to access Pi camera. Make sure the camera server is running.');
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.message.includes('timeout')) {
+          toast.error('Camera timeout. The camera may be busy or not responding.');
+        } else {
+          toast.error(error.message);
+        }
+      } else {
+        toast.error('Failed to access Pi camera. Check console for details.');
+      }
     } finally {
       setIsAnalyzing(false);
     }
