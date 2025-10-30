@@ -5,6 +5,9 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
@@ -38,20 +41,50 @@ app.post('/api/capture', async (req, res) => {
     const filename = `capture_${timestamp}.jpg`;
     const filepath = path.join(TEMP_DIR, filename);
 
-    // Use libcamera-still for modern Pi OS or raspistill for older versions
-    // Try libcamera-still first
-    let command = `libcamera-still -o ${filepath} --width 1920 --height 1080 --timeout 1`;
-    
-    try {
-      console.log('Attempting to capture with libcamera-still...');
-      await execAsync(command);
-      console.log('Photo captured successfully with libcamera-still');
-    } catch (libcameraError) {
-      // Fallback to raspistill for older Pi OS
-      console.log('libcamera-still failed, trying raspistill...');
-      command = `raspistill -o ${filepath} -w 1920 -h 1080 -t 1`;
-      await execAsync(command);
-      console.log('Photo captured successfully with raspistill');
+    // Check camera type from environment variable (default: CSI camera)
+    const cameraType = process.env.CAMERA_TYPE || 'csi';
+    const usbDevice = process.env.USB_CAMERA_DEVICE || '/dev/video0';
+    const resolution = process.env.CAMERA_RESOLUTION || '1920x1080';
+
+    let command;
+    let captureSuccess = false;
+
+    if (cameraType === 'usb') {
+      // USB Webcam using fswebcam
+      console.log(`Attempting to capture with USB webcam (${usbDevice})...`);
+      command = `fswebcam --device ${usbDevice} -r ${resolution} --no-banner ${filepath}`;
+      
+      try {
+        await execAsync(command);
+        console.log('Photo captured successfully with USB webcam');
+        captureSuccess = true;
+      } catch (usbError) {
+        console.error('USB webcam capture failed:', usbError.message);
+        throw new Error('USB webcam not available. Make sure fswebcam is installed and camera is connected.');
+      }
+    } else {
+      // CSI Camera Module - Try libcamera-still first, then raspistill
+      const [width, height] = resolution.split('x');
+      
+      try {
+        console.log('Attempting to capture with libcamera-still...');
+        command = `libcamera-still -o ${filepath} --width ${width} --height ${height} --timeout 1`;
+        await execAsync(command);
+        console.log('Photo captured successfully with libcamera-still');
+        captureSuccess = true;
+      } catch (libcameraError) {
+        // Fallback to raspistill for older Pi OS
+        console.log('libcamera-still failed, trying raspistill...');
+        command = `raspistill -o ${filepath} -w ${width} -h ${height} -t 1`;
+        try {
+          await execAsync(command);
+          console.log('Photo captured successfully with raspistill');
+          captureSuccess = true;
+        } catch (raspistillError) {
+          console.error('Both libcamera and raspistill failed');
+          throw new Error('Camera not available. Make sure the camera is enabled and connected.');
+        }
+      }
     }
 
     // Read the captured image and convert to base64

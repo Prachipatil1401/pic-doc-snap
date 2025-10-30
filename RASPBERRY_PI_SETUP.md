@@ -11,6 +11,8 @@ This guide will help you set up the plant disease detection app on your Raspberr
 
 ## 1. Enable the Camera
 
+### Option A: CSI Camera Module (Ribbon Cable)
+
 ```bash
 sudo raspi-config
 ```
@@ -22,16 +24,43 @@ Reboot your Pi:
 sudo reboot
 ```
 
-## 2. Test Camera Connection
-
-For modern Pi OS (Bullseye or newer):
+Test camera:
 ```bash
-libcamera-still -o test.jpg
+libcamera-still -o test.jpg  # Modern Pi OS
+# OR
+raspistill -o test.jpg       # Older Pi OS
 ```
 
-For older Pi OS:
+### Option B: USB Webcam
+
+1. **Install fswebcam**:
 ```bash
-raspistill -o test.jpg
+sudo apt update
+sudo apt install fswebcam
+```
+
+2. **Connect USB webcam** and verify it's detected:
+```bash
+lsusb
+```
+
+You should see your webcam listed.
+
+3. **Check device path**:
+```bash
+ls /dev/video*
+```
+
+You should see `/dev/video0` (or `/dev/video1` if you have multiple cameras).
+
+4. **Test USB webcam**:
+```bash
+fswebcam --device /dev/video0 -r 1280x720 --no-banner test.jpg
+```
+
+5. **Check supported resolutions**:
+```bash
+v4l2-ctl --list-formats-ext
 ```
 
 If you see a test.jpg file, your camera is working!
@@ -77,6 +106,32 @@ VITE_SUPABASE_PUBLISHABLE_KEY=<your-key>
 VITE_CAMERA_SERVER_URL=http://<your-pi-ip>:3001
 ```
 
+Create a `server/.env` file for camera configuration:
+
+```bash
+# Camera Type: 'csi' for ribbon cable camera, 'usb' for USB webcam
+CAMERA_TYPE=usb
+
+# USB Camera Device (only needed if CAMERA_TYPE=usb)
+USB_CAMERA_DEVICE=/dev/video0
+
+# Camera Resolution
+CAMERA_RESOLUTION=1920x1080
+```
+
+**For CSI Camera Module**, use:
+```bash
+CAMERA_TYPE=csi
+CAMERA_RESOLUTION=1920x1080
+```
+
+**For USB Webcam**, use:
+```bash
+CAMERA_TYPE=usb
+USB_CAMERA_DEVICE=/dev/video0
+CAMERA_RESOLUTION=1280x720
+```
+
 To find your Pi's IP address:
 ```bash
 hostname -I
@@ -91,10 +146,13 @@ You'll need to run TWO services:
 ### Terminal 1: Camera Server
 ```bash
 cd server
+# Make sure you created server/.env file first!
 npm start
 ```
 
 This starts the camera API on port 3001.
+
+**Note**: The camera type (CSI vs USB) is configured in `server/.env`.
 
 ### Terminal 2: Web App
 ```bash
@@ -207,12 +265,30 @@ npx cap open android
 
 ## Troubleshooting
 
-### Camera not working
+### CSI Camera not working
 ```bash
 # Check camera detection
 vcgencmd get_camera
 
 # Should show: supported=1 detected=1
+```
+
+### USB Camera not working
+```bash
+# Check if camera is detected
+lsusb
+
+# Check device path
+ls /dev/video*
+
+# Test with fswebcam
+fswebcam --device /dev/video0 -r 1280x720 --no-banner test.jpg
+
+# If fswebcam not installed
+sudo apt install fswebcam
+
+# Check camera capabilities
+v4l2-ctl --device=/dev/video0 --all
 ```
 
 ### Port already in use
