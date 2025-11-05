@@ -5,6 +5,7 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { networkInterfaces } from 'os';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -179,7 +180,6 @@ app.get('/api/health', (req, res) => {
 
 // Get local IP address
 function getLocalIPAddress() {
-  const { networkInterfaces } = await import('os');
   const nets = networkInterfaces();
   
   for (const name of Object.keys(nets)) {
@@ -197,7 +197,7 @@ function getLocalIPAddress() {
 async function startServer() {
   await ensureTempDir();
   
-  const localIP = await getLocalIPAddress();
+  const localIP = getLocalIPAddress();
   
   app.listen(PORT, '0.0.0.0', () => {
     console.log('\n' + '='.repeat(60));
