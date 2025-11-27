@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,12 +22,21 @@ export default function Evaluation() {
   const navigate = useNavigate();
   const [images, setImages] = useState<TestImage[]>([]);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const [results, setResults] = useState<{
     truePositive: number;
     trueNegative: number;
     falsePositive: number;
     falseNegative: number;
   } | null>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    };
+    getUser();
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -104,7 +113,37 @@ export default function Evaluation() {
         falseNegative: fn,
       });
 
-      toast.success("Evaluation complete!");
+      // Save results to database if user is logged in
+      if (userId) {
+        const accuracy = ((tp + tn) / images.length) * 100;
+        const precision = tp > 0 ? (tp / (tp + fp)) * 100 : 0;
+        const recall = tp > 0 ? (tp / (tp + fn)) * 100 : 0;
+        const f1 = precision + recall > 0 ? (2 * (precision * recall) / (precision + recall)) : 0;
+
+        const { error: insertError } = await supabase
+          .from('evaluation_results')
+          .insert({
+            user_id: userId,
+            true_positive: tp,
+            true_negative: tn,
+            false_positive: fp,
+            false_negative: fn,
+            total_images: images.length,
+            accuracy: accuracy,
+            precision_score: precision,
+            recall_score: recall,
+            f1_score: f1,
+          });
+
+        if (insertError) {
+          console.error('Error saving results:', insertError);
+          toast.error('Failed to save results to database');
+        } else {
+          toast.success('Evaluation complete! Results saved to database.');
+        }
+      } else {
+        toast.success("Evaluation complete!");
+      }
     } catch (error) {
       console.error("Evaluation error:", error);
       toast.error("Failed to evaluate images");

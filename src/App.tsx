@@ -7,7 +7,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Results from "./pages/Results";
 import Evaluation from "./pages/Evaluation";
-import SampleConfusionMatrix from "./pages/SampleConfusionMatrix";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,7 +23,6 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/results" element={<Results />} />
           <Route path="/evaluation" element={<Evaluation />} />
-          <Route path="/sample-matrix" element={<SampleConfusionMatrix />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
