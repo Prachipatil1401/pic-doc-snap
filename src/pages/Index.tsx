@@ -205,13 +205,9 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-primary">PlantGuard</h1>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/sample-matrix")}>
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Sample Results
-            </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate("/evaluation")}>
               <BarChart3 className="h-4 w-4 mr-2" />
-              Test Your Images
+              Model Evaluation
             </Button>
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
