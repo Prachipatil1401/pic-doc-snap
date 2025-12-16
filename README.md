@@ -148,7 +148,10 @@ For questions or issues, please open an issue on GitHub or contact the developme
 
 ## 🖼️ Screenshots
 
-![Screenshot 1](Screenshot1.png)
-![Screenshot 2](screenshots/screenshot2.png)
-![Screenshot 3](screenshots/screenshot3.png)
+![Screenshot 1](Screenshoot\Screenshoot1.jpeg)
+![Screenshot 2](Screenshoot\Screenshoot2.jpeg)
+![Screenshot 3](Screenshoot\screenshoot3.jpeg)
+![Screenshot 4](Screenshoot\screenshoot4.jpeg)
+![Screenshot 5](Screenshoot\screenshoot5.jpeg)
+![Screenshot 6](Screenshoot\screenshoot6.jpeg)
 ...
