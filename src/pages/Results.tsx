@@ -113,6 +113,32 @@ const Results = () => {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Results Card */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Sprout className="h-5 w-5 text-primary" />
+                    Detection Results
+                  </span>
+                  <Badge variant="secondary">{result.confidence}% confident</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-primary mb-2">{result.disease}</h3>
+                  <div className={`flex items-center gap-2 ${getSeverityColor(result.severity)}`}>
+                    {getSeverityIcon(result.severity)}
+                    <span className="font-medium">Severity: {result.severity}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader>

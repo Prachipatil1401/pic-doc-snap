@@ -1,73 +1,147 @@
-# Welcome to your Lovable project
+# Plant Disease Detection System
 
-## Project info
+A modern web application for detecting plant diseases using AI-powered image analysis. Capture photos with your mobile device or Raspberry Pi camera and get instant disease diagnosis with treatment recommendations.
 
-**URL**: https://lovable.dev/projects/5482adab-2c38-45cd-a7a6-ba3377ac103c
+## Features
 
-## How can I edit this code?
+- 📱 **Mobile-First Design**: Optimized for smartphones and tablets
+- 🤖 **AI-Powered Analysis**: Real-time disease detection using advanced AI models
+- 📷 **Camera Integration**: Support for mobile cameras and Raspberry Pi USB cameras
+- 🔒 **Secure Authentication**: User accounts with secure data storage
+- 📊 **Detailed Reports**: Comprehensive analysis with confidence scores and treatment suggestions
+- 🌐 **Offline Capable**: Core functionality works without internet connection
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for fast development and building
+- **Tailwind CSS** for styling
+- **shadcn/ui** component library
+- **React Router** for navigation
+- **TanStack Query** for data management
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5482adab-2c38-45cd-a7a6-ba3377ac103c) and start prompting.
+### Backend
+- **Supabase** for database and authentication
+- **PostgreSQL** with Row Level Security
+- **Edge Functions** for serverless API
+- **Python Flask** for Raspberry Pi camera server
 
-Changes made via Lovable will be committed automatically to this repo.
+### Hardware Integration
+- **Raspberry Pi** with camera module
+- **USB Camera Support**
+- **CSI Camera Support**
 
-**Use your preferred IDE**
+## Quick Start
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
+- Node.js 18+ and npm
+- Raspberry Pi (optional, for camera server)
+- USB Camera or CSI Camera (optional)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+1. **Clone the repository**
+   ```bash
+   git clone <YOUR_GIT_URL>
+   cd plant-disease-detection
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+3. **Configure environment variables**
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your configuration
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### Raspberry Pi Camera Setup
+
+For full functionality with hardware camera:
+
+1. **Setup USB Camera on Raspberry Pi**
+   ```bash
+   chmod +x server/setup-usb-camera.sh
+   ./server/setup-usb-camera.sh
+   ```
+
+2. **Configure Camera Server**
+   ```bash
+   cd server
+   cp .env.example .env
+   # Edit .env with your camera settings
+   npm install
+   npm start
+   ```
+
+3. **Update web app configuration**
+   ```bash
+   # In .env.local, set your Pi's IP
+   VITE_CAMERA_SERVER_URL=http://YOUR_PI_IP:3001
+   ```
+
+## Project Structure
+
+```
+├── src/
+│   ├── components/     # Reusable UI components
+│   ├── pages/         # Application pages
+│   ├── hooks/         # Custom React hooks
+│   ├── lib/           # Utility functions
+│   └── integrations/  # External service integrations
+├── server/            # Raspberry Pi camera server
+├── supabase/          # Database migrations and functions
+└── public/            # Static assets
 ```
 
-**Edit a file directly in GitHub**
+## API Documentation
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Disease Detection
+- **Endpoint**: `/functions/v1/detect-disease`
+- **Method**: POST
+- **Body**: FormData with image file
+- **Response**: Disease analysis with confidence scores
 
-**Use GitHub Codespaces**
+### Camera Server
+- **Endpoint**: `/api/capture`
+- **Method**: GET
+- **Response**: Base64 encoded image
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Deployment
 
-## What technologies are used for this project?
+### Web Application
+```bash
+npm run build
+npm run preview
+```
 
-This project is built with:
+### Camera Server (Raspberry Pi)
+```bash
+cd server
+npm run build
+npm start
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Contributing
 
-## How can I deploy this project?
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-Simply open [Lovable](https://lovable.dev/projects/5482adab-2c38-45cd-a7a6-ba3377ac103c) and click on Share -> Publish.
+## License
 
-## Can I connect a custom domain to my Lovable project?
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-Yes, you can!
+## Support
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+For questions or issues, please open an issue on GitHub or contact the development team.
