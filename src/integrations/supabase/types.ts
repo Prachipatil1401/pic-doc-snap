@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      evaluation_results: {
+        Row: {
+          accuracy: number | null
+          created_at: string
+          f1_score: number | null
+          false_negative: number
+          false_positive: number
+          id: string
+          precision_score: number | null
+          recall_score: number | null
+          total_images: number
+          true_negative: number
+          true_positive: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string
+          f1_score?: number | null
+          false_negative?: number
+          false_positive?: number
+          id?: string
+          precision_score?: number | null
+          recall_score?: number | null
+          total_images?: number
+          true_negative?: number
+          true_positive?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string
+          f1_score?: number | null
+          false_negative?: number
+          false_positive?: number
+          id?: string
+          precision_score?: number | null
+          recall_score?: number | null
+          total_images?: number
+          true_negative?: number
+          true_positive?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
