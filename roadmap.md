@@ -1,0 +1,3 @@
+- [ ] Identify the trained Roboflow model and its export format (waiting for the user to locate it).
+- [ ] Replace the Gemini prediction path with inference from the user's actual trained model.
+- [ ] Verify a real image prediction and confirm no Gemini call remains.
