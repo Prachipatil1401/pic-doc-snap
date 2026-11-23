@@ -1,3 +1,4 @@
+- [x] Fix the Raspberry Pi camera server's invalid IP lookup; health and mock capture respond successfully.
 - [ ] Identify the trained Roboflow model and its export format (waiting for the user to locate it).
-- [ ] Replace the Gemini prediction path with inference from the user's actual trained model.
+- [ ] Replace Gemini with local inference from the user's actual trained model.
 - [ ] Verify a real image prediction and confirm no Gemini call remains.

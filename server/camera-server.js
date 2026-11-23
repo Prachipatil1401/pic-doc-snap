@@ -6,6 +6,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { networkInterfaces } from 'os';
 
 dotenv.config();
 
@@ -179,7 +180,6 @@ app.get('/api/health', (req, res) => {
 
 // Get local IP address
 function getLocalIPAddress() {
-  const { networkInterfaces } = await import('os');
   const nets = networkInterfaces();
   
   for (const name of Object.keys(nets)) {
